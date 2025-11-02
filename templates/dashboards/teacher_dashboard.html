@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-900">Teacher Dashboard</h1>
+<p class="mt-1 text-lg text-gray-600">Welcome, <strong>{{ teacher.full_name }}</strong></p>
+
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+    
+    <div class="md:col-span-2">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">Enter Student Grade</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" novalidate>
+                    {{ form.csrf_token }}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="sm:col-span-2">
+                            {{ form.student_admission.label(class="block text-sm font-medium text-gray-700") }}
+                            {{ form.student_admission(class="form-input mt-1", placeholder="e.g., GHS/00001/25") }}
+                        </div>
+                        <div>
+                            {{ form.subject_id.label(class="block text-sm font-medium text-gray-700") }}
+                            {{ form.subject_id(class="form-select mt-1") }}
+                        </div>
+                        <div>
+                            {{ form.term.label(class="block text-sm font-medium text-gray-700") }}
+                            {{ form.term(class="form-select mt-1") }}
+                        </div>
+                        <div class="sm:col-span-2">
+                            {{ form.marks.label(class="block text-sm font-medium text-gray-700") }}
+                            {{ form.marks(class="form-input mt-1", type="number", min="0", max="100") }}
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="md:col-span-1">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">Recent Grade Entries</h3>
+            </div>
+            <div class="card-body">
+                <ul role="list" class="divide-y divide-gray-200">
+                    {% for grade in recent_grades %}
+                    <li class="py-3">
+                        <p class="text-sm font-medium text-gray-900">{{ grade.student.full_name }}</p>
+                        <p class="text-sm text-gray-500">
+                            {{ grade.subject.name }} - {{ grade.term }}
+                        </p>
+                        <p class="text-sm font-semibold text-indigo-600">
+                            {{ grade.marks }}% ({{ grade.grade_letter.value }})
+                        </p>
+                    </li>
+                    {% else %}
+                    <li class="py-3">
+                        <p class="text-sm text-gray-500">You have not entered any grades yet.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

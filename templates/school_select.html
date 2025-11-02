@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Select Your School{% endblock %}
+
+{% block content %}
+<div class="min-h-full flex flex-col justify-center items-center">
+    <div class="w-full max-w-lg">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Welcome to the Academic Ecosystem</h2>
+                <p class="mt-1 text-sm text-gray-600">Please select your institution to proceed.</p>
+            </div>
+            <div class="card-body" x-data="{ selectedSchool: '', selectedRole: '' }">
+                
+                <div class="mb-6">
+                    <label for="school" class="block text-sm font-medium text-gray-700">Select School</label>
+                    <select id="school" x-model="selectedSchool" class="form-select mt-1">
+                        <option value="" disabled>-- Choose your school --</option>
+                        {% for school in schools %}
+                            <option value="{{ school.school_code }}">{{ school.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-6" x-show="selectedSchool">
+                    <label class="block text-sm font-medium text-gray-700">Login as:</label>
+                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button @click="selectedRole = 'admin'"
+                                :class="{ 'bg-indigo-600 text-white': selectedRole === 'admin', 'bg-gray-200 text-gray-700 hover:bg-gray-300': selectedRole !== 'admin' }"
+                                class="w-full text-left p-4 rounded-lg transition">
+                            <span class="font-medium">School Admin</span>
+                            <span class="block text-sm opacity-75">Manage school settings.</span>
+                        </button>
+                        <button @click="selectedRole = 'teacher'"
+                                :class="{ 'bg-indigo-600 text-white': selectedRole === 'teacher', 'bg-gray-200 text-gray-700 hover:bg-gray-300': selectedRole !== 'teacher' }"
+                                class="w-full text-left p-4 rounded-lg transition">
+                            <span class="font-medium">Teacher</span>
+                            <span class="block text-sm opacity-75">Enter grades and remarks.</span>
+                        </button>
+                        <button @click="selectedRole = 'student'"
+                                :class="{ 'bg-indigo-600 text-white': selectedRole === 'student', 'bg-gray-200 text-gray-700 hover:bg-gray-300': selectedRole !== 'student' }"
+                                class="w-full text-left p-4 rounded-lg transition col-span-1 sm:col-span-2">
+                            <span class="font-medium">Student</span>
+                            <span class="block text-sm opacity-75">View grades and analytics.</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div x-show="selectedSchool && selectedRole">
+                    <a :href="'/login/' + selectedRole + '/' + selectedSchool"
+                       class="w-full btn btn-primary">
+                        Proceed to Login
+                    </a>
+                </div>
+
+                <div class="mt-8 text-center border-t pt-6">
+                    <p class="text-sm text-gray-600">Are you the platform owner?</p>
+                    <a href="{{ url_for('login', role='super_admin', school_code='platform') }}"
+                       class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                        Super Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

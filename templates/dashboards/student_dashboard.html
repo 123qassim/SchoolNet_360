@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Student Dashboard</h1>
+        <p class="mt-1 text-lg text-gray-600">Welcome, <strong>{{ student.full_name }}</strong></p>
+        <p class="text-sm text-gray-500">Admission: {{ student.admission_number }} | Form: {{ student.form }}</p>
+    </div>
+</div>
+
+<div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <div class="lg:col-span-2 space-y-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">AI Performance Summary (v7.0+)</h3>
+            </div>
+            <div class="card-body space-y-4">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500">AI-Generated Remark</h4>
+                    <p class="text-gray-800">{{ ai_remarks.summary }}</p>
+                </div>
+                <div class="border-t pt-4">
+                    <h4 class="text-sm font-medium text-gray-500">Predictive Engine</h4>
+                    <p class="text-gray-800">{{ ai_remarks.prediction }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">Your Academic Record</h3>
+            </div>
+            <div class="card-body">
+                {% if not grades_by_term %}
+                    <p class="text-gray-500">Your grades have not been posted yet.</p>
+                {% else %}
+                <div class="space-y-6">
+                    {% for term, grades in grades_by_term.items() %}
+                    <div x-data="{ open: true }" class="border border-gray-200 rounded-lg">
+                        <div @click="open = !open" class="bg-gray-50 px-4 py-3 flex justify-between items-center cursor-pointer">
+                            <h4 class="font-medium text-gray-800">{{ term }}</h4>
+                            <a href="{{ url_for('download_report_card', student_id=student.id, term=term) }}"
+                               class="text-sm btn btn-primary !py-1 !px-2"
+                               @click.stop> Download PDF Report
+                            </a>
+                        </div>
+                        <div x-show="open" class="p-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Marks</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Teacher</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for grade in grades %}
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ grade.subject.name }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-700">{{ grade.marks }}%</td>
+                                        <td class="px-4 py-3 text-sm font-semibold 
+                                            {% if grade.grade_letter.value in ['A+', 'A'] %}text-green-600
+                                            {% elif grade.grade_letter.value == 'B' %}text-blue-600
+                                            {% elif grade.grade_letter.value == 'C' %}text-yellow-600
+                                            {% else %}text-red-600{% endif %}">
+                                            {{ grade.grade_letter.value }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">{{ grade.teacher.full_name }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-1">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">Performance Trend</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-sm text-gray-600 mb-4">Your average mark per term.</p>
+                <div class="h-80">
+                    <canvas id="studentTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const ctx = document.getElementById('studentTrendChart').getContext('2d');
+    
+    // Fetch data from our API
+    const response = await fetch(`/api/analytics/student_trend/{{ student.id }}`);
+    const chartData = await response.json();
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Average Mark',
+                data: chartData.data,
+                fill: true,
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

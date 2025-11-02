@@ -1,0 +1,188 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Report Card</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #6366F1;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #4F46E5;
+            font-size: 24px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: normal;
+        }
+        .student-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #EEF2FF;
+            border-radius: 8px;
+        }
+        .student-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .student-info td {
+            padding: 4px;
+        }
+        .student-info .label {
+            font-weight: bold;
+            width: 120px;
+        }
+        .grades-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .grades-table th, .grades-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .grades-table th {
+            background-color: #F9FAFB;
+            font-weight: bold;
+            color: #374151;
+        }
+        .grades-table tr:nth-child(even) {
+            background-color: #F9FAFB;
+        }
+        .summary {
+            margin-top: 20px;
+            width: 100%;
+            display: block;
+        }
+        .summary-box {
+            width: 45%;
+            float: left;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .summary-box.remarks {
+            float: right;
+            background-color: #F9FAFB;
+        }
+        .summary-box h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+            font-size: 10px;
+            color: #777;
+            /* Fix for WeasyPrint positioning */
+            position: running(footer);
+        }
+        @page {
+            @bottom-center {
+                content: element(footer);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ student.school.name }}</h1>
+        <h2>Academic Report Card</h2>
+    </div>
+
+    <div class="student-info">
+        <table>
+            <tr>
+                <td class="label">Student Name:</td>
+                <td>{{ student.full_name }}</td>
+                <td class="label">Term:</td>
+                <td>{{ term }}</td>
+            </tr>
+            <tr>
+                <td class="label">Admission No:</td>
+                <td>{{ student.admission_number }}</td>
+                <td class="label">Form:</td>
+                <td>{{ student.form }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="grades-table">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Marks (%)</th>
+                <th>Grade</th>
+                <th>Subject Teacher</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grade in grades %}
+            <tr>
+                <td>{{ grade.subject.name }}</td>
+                <td style="text-align: center;">{{ grade.marks }}</td>
+                <td style="text-align: center; font-weight: bold;">{{ grade.grade_letter.value }}</td>
+                <td>{{ grade.teacher.full_name }}</td>
+                <td>
+                    {% if grade.marks >= 80 %}Excellent
+                    {% elif grade.marks >= 60 %}Good
+                    {% elif grade.marks >= 50 %}Average
+                    {% else %}Needs Improvement
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="summary">
+        <div class="summary-box">
+            <h3>Term Summary</h3>
+            <table>
+                <tr>
+                    <td class="label">Total Marks:</td>
+                    <td>{{ summary.total_marks }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Average Mark:</td>
+                    <td style="font-weight: bold;">{{ summary.average_marks }}%</td>
+                </tr>
+                <tr>
+                    <td class="label">Class Rank:</td>
+                    <td>{{ summary.class_rank }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="summary-box remarks">
+            <h3>Remarks</h3>
+            <p><strong>Class Teacher:</strong> {{ summary.teacher_remark }}</p>
+            <p><strong>Principal:</strong> {{ summary.principal_remark }}</p>
+        </div>
+    </div>
+    
+    <div style="clear: both;"></div>
+
+    <div class="footer">
+        <p>Generated on: {{ now.strftime("%Y-%m-%d %H:%M:%S") }} UTC</p>
+        <p>&copy; {{ now.strftime("%Y") }} {{ student.school.name }}. Powered by Academic Ecosystem v7.0.</p>
+    </div>
+</body>
+</html>

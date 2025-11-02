@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Academic Ecosystem v7.0{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Simple style for sidebar nav items */
+        .nav-link {
+            @apply block px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-indigo-500 hover:text-white;
+        }
+        .nav-link.active {
+            @apply bg-indigo-600 text-white;
+        }
+        /* Custom form styles */
+        .form-input {
+            @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
+        }
+        .form-select {
+             @apply block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
+        }
+        .btn {
+            @apply inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white;
+        }
+        .btn-primary {
+            @apply bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+        }
+        .btn-danger {
+            @apply bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
+        }
+        .card {
+            @apply bg-white shadow-lg rounded-lg overflow-hidden;
+        }
+        .card-header {
+            @apply bg-gray-50 px-6 py-4 border-b border-gray-200;
+        }
+        .card-body {
+            @apply p-6;
+        }
+    </style>
+</head>
+<body class="h-full">
+    <div x-data="{ sidebarOpen: false }">
+        
+        <nav class="bg-indigo-600 shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <a href="{{ url_for('select_school') }}" class="flex-shrink-0 flex items-center">
+                            <svg class="h-8 w-8 text-indigo-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.906 59.906 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                            </svg>
+                            <span class="ml-2 text-white font-bold text-xl">Academic Ecosystem v7.0</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center">
+                        {% if current_user.is_authenticated %}
+                            <span class="text-indigo-200 text-sm mr-4 hidden sm:block">
+                                Logged in as: <strong>{{ current_user.username }}</strong>
+                                {% if current_user.school %}
+                                    | {{ current_user.school.name }}
+                                {% endif %}
+                            </span>
+                            <a href="{{ url_for('logout') }}" class="btn bg-indigo-700 hover:bg-indigo-800">Logout</a>
+                        {% else %}
+                             <span class="text-indigo-200 text-sm">Welcome, Guest</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-4">
+                    {% for category, message in messages %}
+                        {% set color = 'blue' %}
+                        {% if category == 'success' %}{% set color = 'green' %}{% endif %}
+                        {% if category == 'danger' %}{% set color = 'red' %}{% endif %}
+                        {% if category == 'warning' %}{% set color = 'yellow' %}{% endif %}
+                        <div class="bg-{{color}}-100 border-l-4 border-{{color}}-500 text-{{color}}-700 p-4" role="alert">
+                            <p>{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

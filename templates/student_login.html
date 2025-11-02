@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Student Login{% endblock %}
+
+{% block content %}
+<div class="min-h-full flex flex-col justify-center items-center">
+    <div class="w-full max-w-md">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Student Login</h2>
+                <p class="mt-1 text-sm font-medium text-indigo-600">{{ school.name }}</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" novalidate>
+                    {{ form.csrf_token }}
+                    <div class="mb-4">
+                        {{ form.username.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.username(class="form-input mt-1") }}
+                    </div>
+                    <div class="mb-6">
+                        {{ form.password.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.password(class="form-input mt-1", type="password") }}
+                    </div>
+                    <div>
+                        {{ form.submit(class="w-full btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+         <div class="mt-4 text-center">
+             <a href="{{ url_for('select_school') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                &larr; Back to school selection
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

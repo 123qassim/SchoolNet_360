@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Forbidden (403){% endblock %}
+{% block content %}
+<div class="text-center">
+    <h1 class="text-6xl font-bold text-indigo-600">403</h1>
+    <h2 class="mt-4 text-3xl font-bold text-gray-900">Access Forbidden</h2>
+    <p class="mt-2 text-lg text-gray-600">
+        You do not have permission to access this page. Your role ({{ current_user.role.name }}) is not authorized.
+    </p>
+    <div class="mt-8">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

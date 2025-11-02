@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Super Admin Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
+<p class="mt-1 text-lg text-gray-600">Global Platform Management</p>
+
+<div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900">Register New School</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="" novalidate>
+                {{ form.csrf_token }}
+                <div class="space-y-4">
+                    <div>
+                        {{ form.school_name.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.school_name(class="form-input mt-1") }}
+                    </div>
+                    <div>
+                        {{ form.school_code.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.school_code(class="form-input mt-1") }}
+                    </div>
+                    <hr/>
+                    <p class="text-sm font-medium text-gray-700">Initial School Admin Account</p>
+                    <div>
+                        {{ form.admin_username.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.admin_username(class="form-input mt-1") }}
+                    </div>
+                    <div>
+                        {{ form.admin_password.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.admin_password(class="form-input mt-1", type="password") }}
+                    </div>
+                    <div>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="space-y-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">(Bonus) Inter-School Performance</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-sm text-gray-600 mb-4">Average score across all students and subjects.</p>
+                <div class="h-64">
+                    <canvas id="schoolComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">Manage Existing Schools</h3>
+            </div>
+            <div class="card-body">
+                <ul role="list" class="divide-y divide-gray-200">
+                    {% for school in schools %}
+                    <li class="py-3 flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">{{ school.name }}</p>
+                            <p class="text-sm text-gray-500">{{ school.school_code }}</p>
+                        </div>
+                        <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Manage</a>
+                    </li>
+                    {% else %}
+                    <li class="py-3">
+                        <p class="text-sm text-gray-500">No schools registered yet.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('schoolComparisonChart').getContext('2d');
+    const chartData = {{ comparison_data | tojson }};
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Average Score',
+                data: chartData.data,
+                backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'School Performance Comparison'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

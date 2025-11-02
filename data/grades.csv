@@ -1,0 +1,10 @@
+student_admission_number,subject_name,teacher_username,term,marks
+GHS/00001/25,Mathematics,ghs_teacher1,Term 1 2025,85
+GHS/00001/25,English,ghs_teacher1,Term 1 2025,72
+GHS/00001/25,Physics,ghs_teacher1,Term 1 2025,91
+GHS/00002/25,Mathematics,ghs_teacher1,Term 1 2025,65
+GHS/00002/25,English,ghs_teacher1,Term 1 2025,78
+GHS/00002/25,Physics,ghs_teacher1,Term 1 2025,55
+MHS/00001/25,Mathematics,mhs_teacher1,Term 1 2025,95
+MHS/00001/25,English,mhs_teacher1,Term 1 2025,88
+MHS/00001/25,Biology,mhs_teacher1,Term 1 2025,92

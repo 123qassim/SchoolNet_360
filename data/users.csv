@@ -1,0 +1,14 @@
+username,password,role,school_code,full_name,form
+superadmin,super123,super_admin,,Super Admin,
+ghs_admin,admin123,school_admin,GHS@1,,
+ghs_teacher1,teacher123,teacher,GHS@1,Mr. John Doe,
+ghs_student1,student123,student,GHS@1,Alice Smith,1
+ghs_student2,student123,student,GHS@1,Bob Johnson,1
+ghs_student3,student123,student,GHS@1,Charlie Brown,2
+mhs_admin,admin123,school_admin,MHS@2,,
+mhs_teacher1,teacher123,teacher,MHS@2,Ms. Jane Roe,
+mhs_student1,student123,student,MHS@2,David Kim,1
+mhs_student2,student123,student,MHS@2,Eva Williams,2
+stc_admin,admin123,school_admin,STC@3,,
+stc_teacher1,teacher123,teacher,STC@3,Dr. Paul K.,
+stc_student1,student123,student,STC@3,Fiona Chen,3
