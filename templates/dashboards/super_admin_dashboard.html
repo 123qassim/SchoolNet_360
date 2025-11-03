@@ -5,11 +5,33 @@
 <h1 class="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
 <p class="mt-1 text-lg text-gray-600">Global Platform Management</p>
 
+{% if report %}
+<div class="my-6 card">
+    <div class="card-header">
+        <h3 class="text-lg font-medium text-gray-900">Import Report</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Added:</strong> {{ report.added }}</p>
+        <p><strong>Skipped/Errors:</strong> {{ report.skipped }}</p>
+        {% if report.errors %}
+        <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <h4 class="font-medium text-red-800">Error Details:</h4>
+            <ul class="list-disc list-inside text-sm text-red-700 max-h-40 overflow-y-auto">
+                {% for error in report.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
     
     <div class="card">
         <div class="card-header">
-            <h3 class="text-lg font-medium text-gray-900">Register New School</h3>
+            <h3 class="text-lg font-medium text-gray-900">Register New School (One by One)</h3>
         </div>
         <div class="card-body">
             <form method="POST" action="" novalidate>
@@ -32,7 +54,7 @@
                     <div>
                         {{ form.admin_password.label(class="block text-sm font-medium text-gray-700") }}
                         {{ form.admin_password(class="form-input mt-1", type="password") }}
-                    </div>
+                        </div>
                     <div>
                         {{ form.submit(class="btn btn-primary") }}
                     </div>
@@ -41,40 +63,70 @@
         </div>
     </div>
 
-    <div class="space-y-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="text-lg font-medium text-gray-900">(Bonus) Inter-School Performance</h3>
-            </div>
-            <div class="card-body">
-                <p class="text-sm text-gray-600 mb-4">Average score across all students and subjects.</p>
-                <div class="h-64">
-                    <canvas id="schoolComparisonChart"></canvas>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900">Bulk School Import</h3>
+        </div>
+        <div class="card-body space-y-4">
+            <p class="text-sm text-gray-600">
+                Download the template to add multiple schools and their admin accounts at once.
+                Required columns: <strong>SchoolName, SchoolCode, AdminUsername, AdminPassword</strong>
+            </p>
+            <a href="{{ url_for('super_admin_download_template') }}"
+               class="w-full text-center btn bg-green-600 hover:bg-green-700">
+                Download Schools Template (.xlsx)
+            </a>
+            <form method="POST" action="" enctype="multipart/form-data">
+                {{ bulk_form.csrf_token }}
+                <div>
+                    {{ bulk_form.school_file.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ bulk_form.school_file(class="form-input mt-1") }}
+                    {% for error in bulk_form.school_file.errors %}
+                        <span class="text-red-500 text-xs">{{ error }}</span>
+                    {% endfor %}
                 </div>
+                <div>
+                    {{ bulk_form.submit_schools(class="w-full btn btn-primary mt-4") }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900">(Bonus) Inter-School Performance</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-sm text-gray-600 mb-4">Average score across all students and subjects.</p>
+            <div class="h-64">
+                <canvas id="schoolComparisonChart"></canvas>
             </div>
         </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h3 class="text-lg font-medium text-gray-900">Manage Existing Schools</h3>
-            </div>
-            <div class="card-body">
-                <ul role="list" class="divide-y divide-gray-200">
-                    {% for school in schools %}
-                    <li class="py-3 flex justify-between items-center">
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">{{ school.name }}</p>
-                            <p class="text-sm text-gray-500">{{ school.school_code }}</p>
-                        </div>
-                        <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Manage</a>
-                    </li>
-                    {% else %}
-                    <li class="py-3">
-                        <p class="text-sm text-gray-500">No schools registered yet.</p>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900">Manage Existing Schools</h3>
+        </div>
+        <div class="card-body">
+            <ul role="list" class="divide-y divide-gray-200">
+                {% for school in schools %}
+                <li class="py-3 flex justify-between items-center">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">{{ school.name }}</p>
+                        <p class="text-sm text-gray-500">{{ school.school_code }}</p>
+                    </div>
+                    <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Manage</a>
+                </li>
+                {% else %}
+                <li class="py-3">
+                    <p class="text-sm text-gray-500">No schools registered yet.</p>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </div>
@@ -100,17 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
-                }
+                y: { beginAtZero: true, max: 100 }
             },
             plugins: {
                 legend: { display: false },
-                title: {
-                    display: true,
-                    text: 'School Performance Comparison'
-                }
+                title: { display: true, text: 'School Performance Comparison' }
             }
         }
     });

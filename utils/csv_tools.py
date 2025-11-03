@@ -3,7 +3,6 @@
 
 import pandas as pd
 from models import db, School, User, Student, Teacher, Subject, Grade, UserRole
-# We remove the 'from app import...' line from here
 from datetime import datetime
 
 DATA_DIR = 'data'
@@ -11,11 +10,8 @@ DATA_DIR = 'data'
 def load_data_from_csv():
     """Loads all mock data from CSV files into the database."""
     try:
-        # --- THIS IS THE FIX ---
-        # We move the import inside the function.
-        # This breaks the circular import loop.
+        # We move the import inside the function to break circular imports
         from app import calculate_grade_letter, generate_admission_number
-        # ---------------------
 
         # 1. Load Schools
         schools_df = pd.read_csv(f'{DATA_DIR}/schools.csv')
@@ -25,18 +21,16 @@ def load_data_from_csv():
         db.session.commit()
         print("Schools loaded.")
 
-        # Create a school_code -> school_id map
         school_map = {s.school_code: s.id for s in School.query.all()}
         
-        # 2. Load Users (and their profiles: Student, Teacher)
+        # 2. Load Users (and their profiles)
         users_df = pd.read_csv(f'{DATA_DIR}/users.csv').fillna('')
-        student_id_counter = {} # To auto-increment student ID per school
+        student_id_counter = {} 
         
         for _, row in users_df.iterrows():
             role = UserRole(row['role'])
             school_id = school_map.get(row['school_code'])
             
-            # Skip if user is not super_admin and school is not found
             if not school_id and role != UserRole.SUPER_ADMIN:
                 print(f"Skipping user {row['username']} - school code {row['school_code']} not found.")
                 continue
@@ -48,30 +42,34 @@ def load_data_from_csv():
             )
             user.set_password(row['password'])
             db.session.add(user)
-            db.session.flush() # Get user.id
+            db.session.flush() 
 
             # Create profiles
             if role == UserRole.STUDENT:
                 school_code_base = row['school_code'].split('@')[0]
                 
-                # Increment student ID for this school
                 if school_code_base not in student_id_counter:
                     student_id_counter[school_code_base] = 0
                 student_id_counter[school_code_base] += 1
                 
+                # --- NEW LOGIC ---
+                adm_year = int(row['admission_year'])
+                year_str = str(adm_year)[-2:] # e.g., 2025 -> "25"
+                
                 adm_num = generate_admission_number(
                     school_code_base,
                     student_id_counter[school_code_base],
-                    str(datetime.now().year)
+                    year_str  # Pass the 2-digit year string
                 )
                 
                 student = Student(
                     full_name=row['full_name'],
                     admission_number=adm_num,
-                    form=int(row['form']),
+                    admission_year=adm_year, # Store the full admission year
                     user_id=user.id,
                     school_id=school_id
                 )
+                # --- END NEW LOGIC ---
                 db.session.add(student)
             
             elif role == UserRole.TEACHER:
@@ -95,7 +93,6 @@ def load_data_from_csv():
         db.session.commit()
         print("Subjects loaded.")
 
-        # Create maps for loading grades
         student_map = {s.admission_number: s.id for s in Student.query.all()}
         subject_map = {(s.name, s.school_id): s.id for s in Subject.query.all()}
         teacher_map = {u.username: u.teacher_profile.id for u in User.query.filter_by(role=UserRole.TEACHER).all() if u.teacher_profile}
@@ -105,7 +102,6 @@ def load_data_from_csv():
         for _, row in grades_df.iterrows():
             student_id = student_map.get(row['student_admission_number'])
             
-            # Find student's school to map subject
             student = Student.query.get(student_id)
             if not student:
                 print(f"Skipping grade - student {row['student_admission_number']} not found.")
@@ -126,12 +122,8 @@ def load_data_from_csv():
                 )
                 db.session.add(grade)
             else:
-                print(f"Skipping grade for {row['student_admission_number']} - missing relation (Student, Subject, or Teacher ID not found).")
-                if not subject_id:
-                    print(f"  -> Debug: Subject '{row['subject_name']}' for school_id {school_id} not in map.")
-                if not teacher_id:
-                    print(f"  -> Debug: Teacher '{row['teacher_username']}' not in map or has no profile.")
-
+                print(f"Skipping grade for {row['student_admission_number']} - missing relation.")
+                
         db.session.commit()
         print("Grades loaded.")
         print("--- Mock Data Load Complete ---")

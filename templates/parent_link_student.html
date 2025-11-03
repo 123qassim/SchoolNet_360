@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Link Your Student{% endblock %}
+
+{% block content %}
+<div class="min-h-full flex flex-col justify-center items-center">
+    <div class="w-full max-w-md">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Link Your Student</h2>
+                <p class="mt-1 text-sm text-gray-600">
+                    Welcome, {{ parent.full_name }}. Please enter the one-time link code
+                    provided by your school to connect to your student's account.
+                </p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" novalidate>
+                    {{ form.csrf_token }}
+                    <div class="mb-4">
+                        {{ form.link_code.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.link_code(class="form-input mt-1", placeholder="e.g., a1b2c3d4-...") }}
+                        {% for error in form.link_code.errors %}
+                            <span class="text-red-500 text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        {{ form.submit(class="w-full btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

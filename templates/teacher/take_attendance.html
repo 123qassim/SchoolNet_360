@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Take Attendance{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Take Class Attendance</h1>
+        <p class="mt-1 text-lg text-gray-600">Select a form and date to load the roster.</p>
+    </div>
+    <a href="{{ url_for('teacher_dashboard') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+        &larr; Back to Dashboard
+    </a>
+</div>
+
+<div class="card max-w-lg mx-auto">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('teacher_attendance_roster') }}">
+            <div class="space-y-4">
+                <div>
+                    {{ form.form_num.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.form_num(class="form-select mt-1") }}
+                </div>
+                <div>
+                    {{ form.date.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.date(class="form-input mt-1", type="date") }}
+                </div>
+                <div>
+                    {{ form.submit(class="w-full btn btn-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

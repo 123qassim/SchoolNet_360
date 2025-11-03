@@ -4,11 +4,11 @@
 from models import db, Student, Grade, School, UserRole
 from sqlalchemy.sql import func
 import pandas as pd
+from datetime import date # <-- NEW IMPORT
 
 def get_student_grade_trend(student_id):
     """Fetches average marks per term for a specific student."""
     
-    # Query to get average marks grouped by term
     trend_data = db.session.query(
         Grade.term,
         func.avg(Grade.marks).label('average_marks')
@@ -31,22 +31,28 @@ def get_student_grade_trend(student_id):
         'data': data
     }
 
-def get_class_grade_distribution(school_id, form):
+def get_class_grade_distribution(school_id, form_num):
     """Calculates the distribution of grades (A, B, C...) for a form."""
     
+    # --- NEW LOGIC ---
+    # We can't query by 'form' anymore, as it's a property.
+    # We must calculate the required admission_year.
+    current_year = date.today().year
+    required_admission_year = (current_year - form_num) + 1
+    # --- END NEW LOGIC ---
+
     grades = db.session.query(
         Grade.grade_letter
     ).join(Student).filter(
         Student.school_id == school_id,
-        Student.form == form
+        Student.admission_year == required_admission_year # <-- UPDATED QUERY
     ).all()
     
-    # Count occurrences
     distribution = {
         'A+': 0, 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0
     }
     for grade in grades:
-        key = grade.grade_letter.name.replace("AP", "A+") # Handle Enum name
+        key = grade.grade_letter.name.replace("AP", "A+")
         if key in distribution:
             distribution[key] += 1
             
@@ -66,8 +72,6 @@ def get_subject_averages(school_id, form):
 def get_school_comparison():
     """(Bonus) Generates data for Super Admin to compare schools."""
     
-    # This query joins School, Student, and Grade, then groups by school
-    # to find the average mark across all students in all schools.
     query = db.session.query(
         School.name,
         func.avg(Grade.marks).label('average_score')

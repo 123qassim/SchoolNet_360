@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Parent Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
+        <p class="mt-1 text-lg text-gray-600">Welcome, <strong>{{ parent.full_name }}</strong></p>
+    </div>
+    <a href="{{ url_for('parent_link_student') }}" class="btn btn-primary">
+        + Link Another Student
+    </a>
+</div>
+
+<div class="space-y-12">
+    {% for data in student_data %}
+    <div class="card">
+        <div class="card-header bg-indigo-50">
+            <h2 class="text-2xl font-bold text-indigo-800">{{ data.student.full_name }}</h2>
+            <p class="text-sm text-indigo-600">
+                Admission: {{ data.student.admission_number }} | Form: {{ data.student.form }}
+            </p>
+        </div>
+        
+        <div class="card-body grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <h3 class="text-lg font-medium text-gray-900">Academic Record</h3>
+                {% if not data.grades_by_term %}
+                    <p class="text-gray-500">This student's grades have not been posted yet.</p>
+                {% else %}
+                    {% for term, grades in data.grades_by_term.items() %}
+                    <div x-data="{ open: true }" class="border border-gray-200 rounded-lg">
+                        <div @click="open = !open" class="bg-gray-50 px-4 py-3 flex justify-between items-center cursor-pointer">
+                            <h4 class="font-medium text-gray-800">{{ term }}</h4>
+                            <a href="{{ url_for('download_report_card', student_id=data.student.id, term=term) }}"
+                               class="text-sm btn btn-primary !py-1 !px-2"
+                               @click.stop>
+                                Download PDF Report
+                            </a>
+                        </div>
+                        <div x-show="open" class="p-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Marks</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for grade in grades %}
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ grade.subject.name }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-700">{{ grade.marks }}%</td>
+                                        <td class="px-4 py-3 text-sm font-semibold 
+                                            {% if grade.grade_letter.value in ['A+', 'A'] %}text-green-600
+                                            {% elif grade.grade_letter.value == 'B' %}text-blue-600
+                                            {% elif grade.grade_letter.value == 'C' %}text-yellow-600
+                                            {% else %}text-red-600{% endif %}">
+                                            {{ grade.grade_letter.value }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="lg:col-span-1 space-y-8">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">Performance Trend</h3>
+                    <p class="text-sm text-gray-600 mb-4">Average mark per term.</p>
+                    <div class="h-64">
+                        <canvas id="studentTrendChart-{{ data.student.id }}"></canvas>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">Attendance Summary</h3>
+                    <div class="mt-4">
+                        {% if not data.attendance_summary %}
+                            <p class="text-sm text-gray-500">No attendance records found yet.</p>
+                        {% else %}
+                        <ul class="space-y-2">
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-green-600">Present</span>
+                                <span class="font-bold text-lg text-green-600">{{ data.attendance_summary.get('PRESENT', 0) }}</span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-yellow-600">Late</span>
+                                <span class="font-bold text-lg text-yellow-600">{{ data.attendance_summary.get('LATE', 0) }}</span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-red-600">Absent</span>
+                                <span class="font-bold text-lg text-red-600">{{ data.attendance_summary.get('ABSENT', 0) }}</span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="font-medium text-blue-600">Excused</span>
+                                <span class="font-bold text-lg text-blue-600">{{ data.attendance_summary.get('EXCUSED', 0) }}</span>
+                            </li>
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    {% for data in student_data %}
+        const ctx_{{ data.student.id }} = document.getElementById('studentTrendChart-{{ data.student.id }}').getContext('2d');
+        const response_{{ data.student.id }} = await fetch(`/api/analytics/student_trend/{{ data.student.id }}`);
+        const chartData_{{ data.student.id }} = await response_{{ data.student.id }}.json();
+
+        new Chart(ctx_{{ data.student.id }}, {
+            type: 'line',
+            data: {
+                labels: chartData_{{ data.student.id }}.labels,
+                datasets: [{
+                    label: 'Average Mark',
+                    data: chartData_{{ data.student.id }}.data,
+                    fill: true,
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    {% endfor %}
+});
+</script>
+{% endblock %}

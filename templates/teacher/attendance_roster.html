@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Attendance Roster{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Attendance Roster</h1>
+        <p class="mt-1 text-lg text-indigo-600">
+            Form {{ form_num }} on {{ date.strftime('%A, %B %d, %Y') }}
+        </p>
+    </div>
+    <a href="{{ url_for('teacher_attendance', form_num=form_num, date=date_str) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+        &larr; Change Date/Form
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('teacher_attendance_roster') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="date" value="{{ date_str }}">
+            <input type="hidden" name="form_num" value="{{ form_num }}">
+
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admission No.</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for student in students %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ student.full_name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                            {{ student.admission_number }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            {% set current_status = existing_records.get(student.id, AttendanceStatus.PRESENT) %}
+                            <div class="flex space-x-4">
+                                {% for status in AttendanceStatus %}
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="student_{{ student.id }}" value="{{ status.value }}"
+                                           class="form-radio text-indigo-600"
+                                           {% if current_status == status %}checked{% endif %}>
+                                    <span class="ml-2 text-gray-700">{{ status.name }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">
+                            No students found for this form.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="mt-6 border-t pt-6">
+                <button type="submit" class="btn btn-primary">
+                    Save Attendance
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -22,7 +22,7 @@
                 </div>
 
                 <div class="mb-6" x-show="selectedSchool">
-                    <label class="block text-sm font-medium text-gray-700">Login as:</label>
+                    <label class="block text-sm font-medium text-gray-700">I am a:</label>
                     <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <button @click="selectedRole = 'admin'"
                                 :class="{ 'bg-indigo-600 text-white': selectedRole === 'admin', 'bg-gray-200 text-gray-700 hover:bg-gray-300': selectedRole !== 'admin' }"
@@ -38,18 +38,39 @@
                         </button>
                         <button @click="selectedRole = 'student'"
                                 :class="{ 'bg-indigo-600 text-white': selectedRole === 'student', 'bg-gray-200 text-gray-700 hover:bg-gray-300': selectedRole !== 'student' }"
-                                class="w-full text-left p-4 rounded-lg transition col-span-1 sm:col-span-2">
+                                class="w-full text-left p-4 rounded-lg transition">
                             <span class="font-medium">Student</span>
                             <span class="block text-sm opacity-75">View grades and analytics.</span>
+                        </button>
+                        <button @click="selectedRole = 'parent'"
+                                :class="{ 'bg-indigo-600 text-white': selectedRole === 'parent', 'bg-gray-200 text-gray-700 hover:bg-gray-300': selectedRole !== 'parent' }"
+                                class="w-full text-left p-4 rounded-lg transition">
+                            <span class="font-medium">Parent</span>
+                            <span class="block text-sm opacity-75">View your child's progress.</span>
                         </button>
                     </div>
                 </div>
 
                 <div x-show="selectedSchool && selectedRole">
-                    <a :href="'/login/' + selectedRole + '/' + selectedSchool"
-                       class="w-full btn btn-primary">
-                        Proceed to Login
-                    </a>
+                    <h3 class="text-sm font-medium text-gray-700 mb-2 text-center" x-text="`Proceed as a ${selectedRole} at ${selectedSchool}`"></h3>
+                    <template x-if="selectedRole === 'parent'">
+                        <div class="flex space-x-4">
+                             <a :href="'/login/parent/' + selectedSchool"
+                               class="w-full btn btn-primary">
+                                Parent Login
+                            </a>
+                            <a :href="'/register/parent/' + selectedSchool"
+                               class="w-full btn bg-green-600 hover:bg-green-700">
+                                Create Parent Account
+                            </a>
+                        </div>
+                    </template>
+                    <template x-if="selectedRole !== 'parent'">
+                        <a :href="'/login/' + selectedRole + '/' + selectedSchool"
+                           class="w-full btn btn-primary">
+                            Proceed to Login
+                        </a>
+                    </template>
                 </div>
 
                 <div class="mt-8 text-center border-t pt-6">

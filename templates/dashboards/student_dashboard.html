@@ -15,7 +15,7 @@
     <div class="lg:col-span-2 space-y-8">
         <div class="card">
             <div class="card-header">
-                <h3 class="text-lg font-medium text-gray-900">AI Performance Summary (v7.0+)</h3>
+                <h3 class="text-lg font-medium text-gray-900">AI Performance Summary (v8.0+)</h3>
             </div>
             <div class="card-body space-y-4">
                 <div>
@@ -83,16 +83,45 @@
         </div>
     </div>
 
-    <div class="lg:col-span-1">
+    <div class="lg:col-span-1 space-y-8">
         <div class="card">
             <div class="card-header">
                 <h3 class="text-lg font-medium text-gray-900">Performance Trend</h3>
             </div>
             <div class="card-body">
                 <p class="text-sm text-gray-600 mb-4">Your average mark per term.</p>
-                <div class="h-80">
-                    <canvas id="studentTrendChart"></canvas>
+                <div class="h-64"> <canvas id="studentTrendChart"></canvas>
                 </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-medium text-gray-900">Attendance Summary</h3>
+            </div>
+            <div class="card-body">
+                {% if not attendance_summary %}
+                    <p class="text-sm text-gray-500">No attendance records found yet.</p>
+                {% else %}
+                <ul class="space-y-2">
+                    <li class="flex justify-between items-center">
+                        <span class="font-medium text-green-600">Present</span>
+                        <span class="font-bold text-lg text-green-600">{{ attendance_summary.get('PRESENT', 0) }}</span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span class="font-medium text-yellow-600">Late</span>
+                        <span class="font-bold text-lg text-yellow-600">{{ attendance_summary.get('LATE', 0) }}</span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span class="font-medium text-red-600">Absent</span>
+                        <span class="font-bold text-lg text-red-600">{{ attendance_summary.get('ABSENT', 0) }}</span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span class="font-medium text-blue-600">Excused</span>
+                        <span class="font-bold text-lg text-blue-600">{{ attendance_summary.get('EXCUSED', 0) }}</span>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -101,8 +130,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
     const ctx = document.getElementById('studentTrendChart').getContext('2d');
-    
-    // Fetch data from our API
     const response = await fetch(`/api/analytics/student_trend/{{ student.id }}`);
     const chartData = await response.json();
 
@@ -123,14 +150,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
-                }
+                y: { beginAtZero: true, max: 100 }
             },
-            plugins: {
-                legend: { display: false }
-            }
+            plugins: { legend: { display: false } }
         }
     });
 });

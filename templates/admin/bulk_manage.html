@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Bulk Data Management{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Bulk Data Management</h1>
+        <p class="mt-1 text-lg text-indigo-600">{{ current_user.school.name }}</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+        &larr; Back to Admin Dashboard
+    </a>
+</div>
+
+{% if report %}
+<div class="mb-6 card">
+    <div class="card-header">
+        <h3 class="text-lg font-medium text-gray-900">Import Report</h3>
+    </div>
+    <div class="card-body">
+        <p><strong>Added:</strong> {{ report.added }}</p>
+        <p><strong>Skipped/Errors:</strong> {{ report.skipped }}</p>
+        {% if report.errors %}
+        <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <h4 class="font-medium text-red-800">Error Details:</h4>
+            <ul class="list-disc list-inside text-sm text-red-700 max-h-40 overflow-y-auto">
+                {% for error in report.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900">1. Bulk Subject Import</h3>
+        </div>
+        <div class="card-body space-y-4">
+            <p class="text-sm text-gray-600">
+                Download the template, fill in the subject names, and upload the file.
+                Required column: <strong>SubjectName</strong>
+            </p>
+            <a href="{{ url_for('download_template', template_type='subjects') }}"
+               class="w-full text-center btn bg-green-600 hover:bg-green-700">
+                Download Subjects Template (.xlsx)
+            </a>
+            <form method="POST" action="" enctype="multipart/form-data">
+                {{ subject_form.csrf_token }}
+                <div>
+                    {{ subject_form.subject_file.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ subject_form.subject_file(class="form-input mt-1") }}
+                    {% for error in subject_form.subject_file.errors %}
+                        <span class="text-red-500 text-xs">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div>
+                    {{ subject_form.submit_subjects(class="w-full btn btn-primary mt-4") }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900">2. Bulk Student Import</h3>
+        </div>
+        <div class="card-body space-y-4">
+            <p class="text-sm text-gray-600">
+                Download the template to add students, their admission year, and initial login credentials.
+                Required columns: <strong>FullName, AdmissionYear, LoginUsername, InitialPassword</strong>
+            </p>
+            <a href="{{ url_for('download_template', template_type='students') }}"
+               class="w-full text-center btn bg-green-600 hover:bg-green-700">
+                Download Students Template (.xlsx)
+            </a>
+            <form method="POST" action="" enctype="multipart/form-data">
+                {{ student_form.csrf_token }}
+                <div>
+                    {{ student_form.student_file.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ student_form.student_file(class="form-input mt-1") }}
+                    {% for error in student_form.student_file.errors %}
+                        <span class="text-red-500 text-xs">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div>
+                    {{ student_form.submit_students(class="w-full btn btn-primary mt-4") }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

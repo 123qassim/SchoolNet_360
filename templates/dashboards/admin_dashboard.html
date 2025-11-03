@@ -5,8 +5,7 @@
 <h1 class="text-3xl font-bold text-gray-900">School Admin Dashboard</h1>
 <p class="mt-1 text-lg text-indigo-600">{{ school.name }} ({{ school.school_code }})</p>
 
-<div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div class="card">
+<div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"> <div class="card">
         <div class="card-body">
             <p class="text-sm font-medium text-gray-500">Total Students</p>
             <p class="text-3xl font-bold text-gray-900">{{ stats.student_count }}</p>
@@ -24,6 +23,12 @@
             <p class="text-3xl font-bold text-gray-900">{{ stats.subject_count }}</p>
         </div>
     </div>
+    <div class="card">
+        <div class="card-body">
+            <p class="text-sm font-medium text-gray-500">Total Parents</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.parent_count }}</p>
+        </div>
+    </div>
 </div>
 
 <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -35,19 +40,19 @@
         <div class="card-body grid grid-cols-2 gap-4">
             <a href="{{ url_for('admin_manage_students') }}" class="p-4 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100">
                 <span class="font-medium">Manage Students</span>
-                <span class="block text-sm opacity-75">Add, Edit, View</span>
+                <span class="block text-sm opacity-75">Add one by one</span>
             </a>
-            <a href="#" class="p-4 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100">
+            <a href="#" class="p-4 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 cursor-not-allowed">
                 <span class="font-medium">Manage Teachers</span>
                 <span class="block text-sm opacity-75">Add, Edit, View</span>
             </a>
             <a href="{{ url_for('admin_manage_subjects') }}" class="p-4 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100">
                 <span class="font-medium">Manage Subjects</span>
-                <span class="block text-sm opacity-75">Add, Edit, View</span>
+                <span class="block text-sm opacity-75">Add one by one</span>
             </a>
-            <a href="#" class="p-4 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100">
-                <span class="font-medium">Generate Reports</span>
-                <span class="block text-sm opacity-75">Bulk PDF Export</span>
+            <a href="{{ url_for('admin_bulk_manage') }}" class="p-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100">
+                <span class="font-medium">Bulk Data Tools</span>
+                <span class="block text-sm opacity-75">Import students/subjects</span>
             </a>
         </div>
     </div>
@@ -55,7 +60,7 @@
     <div class="card" x-data="{ selectedForm: 1 }">
         <div class="card-header flex justify-between items-center">
             <h3 class="text-lg font-medium text-gray-900">School Analytics</h3>
-            <select x-model="selectedForm" class="form-select !w-32 !py-1">
+            <select x-model="selectedForm" @change="updateChart($event.target.value)" class="form-select !w-32 !py-1">
                 <option value="1">Form 1</option>
                 <option value="2">Form 2</option>
                 <option value="3">Form 3</option>
@@ -77,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let chart;
 
     async function updateChart(form) {
-        // Handle case where form might be undefined on init
         if (!form) { form = 1; }
         const response = await fetch(`/api/analytics/class_distribution/${form}`);
         const chartData = await response.json();
@@ -94,17 +98,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: 'Number of Grades',
                         data: chartData.data,
-                        backgroundColor: [
-                            '#4F46E5', '#6366F1', '#818CF8', '#A5B4FC', '#C7D2FE', '#EEF2FF'
-                        ]
+                        backgroundColor: ['#4F46E5', '#6366F1', '#818CF8', '#A5B4FC', '#C7D2FE', '#EEF2FF']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
+                    plugins: { legend: { position: 'right' } }
                 }
             });
         }
@@ -113,10 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial load
     updateChart(document.querySelector('select[x-model=\"selectedForm\"]').value);
 
-    // Watch for changes in Alpine.js model
-    document.querySelector('select[x-model=\"selectedForm\"]').addEventListener('change', (e) => {
-        updateChart(e.target.value);
-    });
+    // Re-assign the watcher (needed this to fix a bug)
+    window.updateChart = updateChart;
 });
 </script>
 {% endblock %}
